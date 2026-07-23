@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bharsoft — Ecosystem Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#070c17;
+    --navy-900:#0b1120;
+    --navy-800:#111a2e;
+    --navy-700:#182444;
+    --line:rgba(148,168,209,0.14);
+    --teal:#2dd4bf;
+    --violet:#8b7cf6;
+    --amber:#f5a524;
+    --text-hi:#eef2fb;
+    --text-mid:#a9b4cc;
+    --text-lo:#6e7996;
+    --danger:#f2596b;
+    --radius:14px;
+    --shadow-card: 0 1px 0 rgba(255,255,255,0.03) inset, 0 20px 40px -20px rgba(0,0,0,0.55);
+  }
+  [data-theme="light"]{
+    --navy-950:#f6f7fb;
+    --navy-900:#ffffff;
+    --navy-800:#f0f2f9;
+    --navy-700:#e5e9f4;
+    --line:rgba(23,34,64,0.10);
+    --text-hi:#0d1526;
+    --text-mid:#495474;
+    --text-lo:#7c86a3;
+    --shadow-card: 0 1px 0 rgba(255,255,255,0.6) inset, 0 20px 40px -24px rgba(23,34,64,0.25);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--navy-950);
+    color:var(--text-hi);
+    min-height:100vh;
+    transition:background .4s ease, color .4s ease;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.font-display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--teal);color:#031414;}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+  /* ---------- background atmosphere ---------- */
+  .bg-fx{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  .bg-fx svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5;}
+  .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 85%);mask-image:radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 85%);}
+  .glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.35;}
+  .glow.g1{width:520px;height:520px;background:var(--teal);top:-180px;left:-120px;animation:drift1 22s ease-in-out infinite;}
+  .glow.g2{width:460px;height:460px;background:var(--violet);top:20%;right:-160px;animation:drift2 26s ease-in-out infinite;}
+  @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,60px)}}
+
+  /* ---------- layout shells ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  main{position:relative;z-index:1;padding-top:84px;}
+  .page{display:none;animation:fadeUp .5s ease both;}
+  .page.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- navbar ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    background:color-mix(in srgb, var(--navy-900) 72%, transparent);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:28px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:19px;letter-spacing:.2px;flex:0 0 auto;}
+  .logo-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--violet));display:flex;align-items:center;justify-content:center;color:#04131a;font-weight:700;font-size:16px;box-shadow:0 6px 18px -6px rgba(45,212,191,.55);}
+  .navlinks{display:flex;gap:4px;flex:1;}
+  .navlinks button{
+    background:none;border:none;color:var(--text-mid);font-size:14.5px;font-weight:500;
+    padding:9px 14px;border-radius:8px;transition:color .2s ease, background .2s ease;position:relative;
+  }
+  .navlinks button:hover{color:var(--text-hi);background:var(--navy-800);}
+  .navlinks button.active{color:var(--text-hi);}
+  .navlinks button.active::after{content:'';position:absolute;left:14px;right:14px;bottom:3px;height:2px;border-radius:2px;background:var(--teal);}
+  .nav-right{display:flex;align-items:center;gap:14px;flex:0 0 auto;}
+
+  .toggle{width:44px;height:24px;border-radius:99px;background:var(--navy-700);border:1px solid var(--line);position:relative;flex:0 0 auto;}
+  .toggle .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--teal);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+  [data-theme="light"] .toggle .knob{transform:translateX(20px);background:var(--amber);}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;border:none;border-radius:9px;
+    padding:9px 18px;font-size:14px;font-weight:600;transition:transform .18s ease, box-shadow .18s ease, background .2s ease;
+  }
+  .btn:active{transform:translateY(1px) scale(.98);}
+  .btn-primary{background:linear-gradient(135deg,var(--teal),#22b8a3);color:#04211d;box-shadow:0 8px 22px -10px rgba(45,212,191,.6);}
+  .btn-primary:hover{box-shadow:0 10px 26px -8px rgba(45,212,191,.75);}
+  .btn-ghost{background:var(--navy-800);color:var(--text-hi);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--navy-700);}
+  .btn-danger{background:rgba(242,89,107,.14);color:var(--danger);border:1px solid rgba(242,89,107,.35);}
+  .btn-danger:hover{background:rgba(242,89,107,.22);}
+  .btn-block{width:100%;justify-content:center;padding:12px 18px;}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+  /* ---------- hero / network signature ---------- */
+  .hero{padding:56px 0 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono';font-size:12px;letter-spacing:.06em;color:var(--teal);background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.25);padding:6px 12px;border-radius:99px;margin-bottom:18px;}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .hero h1{font-size:clamp(32px,4.2vw,50px);line-height:1.08;margin:0 0 18px;font-weight:700;letter-spacing:-.01em;}
+  .hero h1 span{background:linear-gradient(135deg,var(--teal),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{color:var(--text-mid);font-size:16.5px;line-height:1.65;max-width:480px;margin:0 0 28px;}
+  .hero-actions{display:flex;gap:12px;}
+  .net-wrap{position:relative;}
+  .net-svg{width:100%;height:auto;overflow:visible;}
+
+  /* ---------- section shell ---------- */
+  section.block{padding:64px 0;}
+  .section-head{max-width:640px;margin-bottom:34px;}
+  .section-head .kicker{font-family:'JetBrains Mono';font-size:12px;color:var(--teal);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:10px;}
+  .section-head h2{font-size:clamp(24px,3vw,32px);margin:0 0 10px;}
+  .section-head p{color:var(--text-mid);margin:0;line-height:1.6;}
+
+  /* ---------- home: table + copy ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+  .info-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--navy-900);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-card);}
+  .info-table caption{text-align:left;font-family:'JetBrains Mono';font-size:12px;color:var(--text-lo);padding:14px 18px;border-bottom:1px solid var(--line);letter-spacing:.04em;text-transform:uppercase;}
+  .info-table td{padding:16px 18px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px;}
+  .info-table tr:last-child td{border-bottom:none;}
+  .info-table td:first-child{width:38%;color:var(--teal);font-family:'JetBrains Mono';font-weight:500;font-size:13px;}
+  .info-table td:last-child{color:var(--text-mid);line-height:1.55;}
+  .info-table tr:hover td{background:var(--navy-800);}
+  .copy-col h3{font-size:24px;margin:0 0 14px;}
+  .copy-col p{color:var(--text-mid);line-height:1.7;margin:0 0 16px;}
+  .copy-col .stats{display:flex;gap:26px;margin:26px 0;}
+  .copy-col .stat b{display:block;font-family:'Space Grotesk';font-size:24px;color:var(--text-hi);}
+  .copy-col .stat span{font-size:12.5px;color:var(--text-lo);}
+
+  /* ---------- cards ---------- */
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;}
+  .card{background:var(--navy-900);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-card);transition:transform .25s ease, border-color .25s ease;}
+  .card:hover{transform:translateY(-4px);border-color:rgba(45,212,191,.35);}
+  .card .ic{width:42px;height:42px;border-radius:10px;background:var(--navy-700);display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px;}
+  .card h4{margin:0 0 8px;font-size:16.5px;}
+  .card p{margin:0;color:var(--text-mid);font-size:13.8px;line-height:1.55;}
+  .empty-state{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--text-lo);border:1px dashed var(--line);border-radius:var(--radius);}
+
+  /* ---------- forms ---------- */
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;color:var(--text-mid);margin-bottom:7px;font-weight:500;}
+  .field input,.field textarea{
+    width:100%;background:var(--navy-800);border:1px solid var(--line);color:var(--text-hi);
+    padding:11px 13px;border-radius:9px;font-size:14.5px;font-family:inherit;transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .field input:focus,.field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,212,191,.15);outline:none;}
+  .field textarea{resize:vertical;min-height:110px;}
+  .hint{font-size:12px;color:var(--text-lo);margin-top:6px;}
+  .err-text{font-size:12.5px;color:var(--danger);margin-top:8px;min-height:1px;}
+  .otp-inputs input{text-align:center;letter-spacing:.15em;font-family:'JetBrains Mono';font-size:18px;}
+
+  .auth-card{max-width:420px;margin:30px auto 0;background:var(--navy-900);border:1px solid var(--line);border-radius:16px;padding:34px;box-shadow:var(--shadow-card);}
+  .auth-card h3{margin:0 0 6px;font-size:21px;}
+  .auth-card .sub{color:var(--text-mid);font-size:13.5px;margin:0 0 24px;}
+  .demo-otp-banner{background:rgba(245,165,36,.12);border:1px solid rgba(245,165,36,.35);color:var(--amber);font-size:12.5px;padding:11px 13px;border-radius:9px;margin-bottom:18px;line-height:1.5;font-family:'JetBrains Mono';}
+  .lock-banner{background:rgba(242,89,107,.12);border:1px solid rgba(242,89,107,.35);color:var(--danger);font-size:13px;padding:11px 13px;border-radius:9px;margin-bottom:18px;}
+  .link-btn{background:none;border:none;color:var(--teal);font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+  .link-btn[disabled]{color:var(--text-lo);text-decoration:none;cursor:default;}
+
+  /* ---------- admin ---------- */
+  .admin-shell{display:grid;grid-template-columns:220px 1fr;gap:0;background:var(--navy-900);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);min-height:520px;}
+  .admin-side{background:var(--navy-800);border-right:1px solid var(--line);padding:22px 14px;}
+  .admin-user{padding:0 8px 18px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+  .admin-user b{display:block;font-size:14.5px;}
+  .admin-user span{font-size:11.5px;color:var(--text-lo);font-family:'JetBrains Mono';}
+  .admin-tab{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--text-mid);padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:3px;}
+  .admin-tab:hover{background:var(--navy-700);color:var(--text-hi);}
+  .admin-tab.active{background:var(--navy-700);color:var(--text-hi);}
+  .admin-main{padding:28px 30px;}
+  .admin-panel{display:none;}
+  .admin-panel.active{display:block;animation:fadeUp .35s ease both;}
+  .admin-toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+  .admin-toprow h3{margin:0;font-size:19px;}
+  table.data-table{width:100%;border-collapse:collapse;font-size:13.8px;}
+  table.data-table th{text-align:left;color:var(--text-lo);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px;border-bottom:1px solid var(--line);}
+  table.data-table td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--text-mid);}
+  table.data-table td.title{color:var(--text-hi);font-weight:500;}
+  .row-actions{display:flex;gap:8px;}
+  .icon-btn{background:var(--navy-700);border:1px solid var(--line);color:var(--text-mid);border-radius:7px;padding:6px 9px;font-size:12.5px;cursor:pointer;}
+  .icon-btn:hover{color:var(--text-hi);}
+  .icon-btn.danger:hover{color:var(--danger);border-color:rgba(242,89,107,.4);}
+  .service-form{background:var(--navy-800);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:24px;display:none;}
+  .service-form.active{display:block;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .full{grid-column:1/-1;}
+  .badge{display:inline-block;font-family:'JetBrains Mono';font-size:11px;padding:3px 8px;border-radius:99px;background:rgba(45,212,191,.12);color:var(--teal);border:1px solid rgba(45,212,191,.3);}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy-800);border:1px solid var(--line);color:var(--text-hi);padding:13px 20px;border-radius:10px;font-size:14px;box-shadow:0 20px 40px -20px rgba(0,0,0,.6);z-index:200;opacity:0;pointer-events:none;transition:all .3s ease;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+  .toast.error{border-color:rgba(242,89,107,.4);}
+  footer{border-top:1px solid var(--line);padding:30px 0;margin-top:40px;color:var(--text-lo);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+  footer a{color:var(--teal);text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;}
+    .split{grid-template-columns:1fr;}
+    .navlinks{display:none;}
+    .admin-shell{grid-template-columns:1fr;}
+    .admin-side{display:flex;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);gap:4px;}
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="bg-fx">
+  <div class="grid-overlay"></div>
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo"><span class="logo-mark">B</span> Bharsoft</div>
+    <div class="navlinks" id="navlinks">
+      <button data-page="home" class="active">Home</button>
+      <button data-page="about">About</button>
+      <button data-page="services">Services</button>
+      <button data-page="contact">Contact Us</button>
+    </div>
+    <div class="nav-right">
+      <div class="toggle" id="themeToggle" role="button" aria-label="Toggle light and dark theme" tabindex="0"><div class="knob"></div></div>
+      <button class="btn btn-primary" id="loginNavBtn" data-page="login">Login</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+
+    <!-- HOME -->
+    <section class="page active" id="page-home">
+      <div class="hero">
+        <div>
+          <span class="eyebrow"><span class="dot"></span> ECOSYSTEM PROTOCOL — LIVE</span>
+          <h1>One secure hub for <span>every website</span> you run.</h1>
+          <p>Bharsoft connects independent websites into a single trusted ecosystem — each site keeps its own backend and data, while Bharsoft handles discovery, secure handshakes, and relay between them.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" data-page="services">Explore services</button>
+            <button class="btn btn-ghost" data-page="about">How it works</button>
+          </div>
+        </div>
+        <div class="net-wrap">
+          <svg class="net-svg" viewBox="0 0 420 340" fill="none">
+            <g transform="translate(60,60)">
+              <line class="flow-line" x1="0" y1="0" x2="150" y2="110" stroke="#2dd4bf" stroke-width="1.4" opacity=".55"/>
+            </g>
+            <g transform="translate(340,50)">
+              <line class="flow-line" x1="0" y1="0" x2="210" y2="110" stroke="#8b7cf6" stroke-width="1.4" opacity=".55"/>
+            </g>
+            <line class="flow-line" x1="70" y1="270" x2="210" y2="170" stroke="#2dd4bf" stroke-width="1.4" opacity=".5"/>
+            <line class="flow-line" x1="360" y1="260" x2="210" y2="170" stroke="#8b7cf6" stroke-width="1.4" opacity=".5"/>
+            <line class="flow-line" x1="210" y1="40" x2="210" y2="170" stroke="#f5a524" stroke-width="1.4" opacity=".5"/>
+            <circle cx="60" cy="60" r="5" fill="#2dd4bf"/>
+            <circle cx="340" cy="50" r="5" fill="#8b7cf6"/>
+            <circle cx="70" cy="270" r="5" fill="#2dd4bf"/>
+            <circle cx="360" cy="260" r="5" fill="#8b7cf6"/>
+            <circle cx="210" cy="40" r="5" fill="#f5a524"/>
+            <circle cx="210" cy="170" r="30" fill="url(#g)"/>
+            <circle cx="210" cy="170" r="9" fill="#eef2fb"/>
+            <text x="210" y="230" text-anchor="middle" fill="#a9b4cc" font-size="11" font-family="JetBrains Mono">BHARSOFT HUB</text>
+            <defs>
+              <radialGradient id="g" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#2dd4bf" stop-opacity=".55"/>
+                <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
+      <section class="block">
+        <div class="split">
+          <table class="info-table">
+            <caption>What Bharsoft actually does</caption>
+            <tbody>
+              <tr><td>Ecosystem hub</td><td>Registers every member site and lets them discover each other's capabilities without exposing internal systems.</td></tr>
+              <tr><td>Secure handshake</td><td>Each connection between two sites gets its own signed secret — nothing is trusted by URL alone.</td></tr>
+              <tr><td>Relay layer</td><td>One site can ask another to run an action (like sending mail) through Bharsoft, without ever seeing its backend.</td></tr>
+              <tr><td>Session-based access</td><td>Every admin action is checked against a live, expiring session — not a static key.</td></tr>
+              <tr><td>Admin control</td><td>Services, members, and access can be managed from one panel, kept in sync across the public site.</td></tr>
+            </tbody>
+          </table>
+          <div class="copy-col">
+            <h3>A platform that connects your ecosystem — not one that owns it</h3>
+            <p>Bharsoft is a platform that provides the ecosystem layer for multiple independent websites. Each site keeps its own backend, its own data, and its own login — Bharsoft only handles the secure communication between them: discovery, trust, and relay.</p>
+            <p>That means adding a new site to your ecosystem doesn't mean merging systems or handing over access. It means a signed, one-directional handshake that only shares what's needed.</p>
+            <div class="stats">
+              <div class="stat"><b>1</b><span>central hub</span></div>
+              <div class="stat"><b>N</b><span>independent members</span></div>
+              <div class="stat"><b>0</b><span>shared databases</span></div>
+            </div>
+            <button class="btn btn-ghost" data-page="contact">Talk to us</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="page" id="page-about">
+      <section class="block" style="padding-top:20px;">
+        <div class="section-head">
+          <span class="kicker">About Bharsoft</span>
+          <h2>Built as connective tissue, not a walled garden</h2>
+          <p>Bharsoft exists to let independent websites talk to each other safely — without any one of them giving up ownership of their data, users, or infrastructure.</p>
+        </div>
+        <div class="cards-grid">
+          <div class="card"><div class="ic">🧩</div><h4>Independent by design</h4><p>Every member keeps its own backend, database, and authentication. Bharsoft never becomes a single point of failure for your data.</p></div>
+          <div class="card"><div class="ic">🔐</div><h4>Trust is explicit</h4><p>A member only trusts another after a deliberate, signed handshake — never automatically, never by default.</p></div>
+          <div class="card"><div class="ic">📡</div><h4>Capability discovery</h4><p>Sites announce what they can do ("send mail", "process payment") without exposing how they do it internally.</p></div>
+        </div>
+      </section>
+      <section class="block" style="padding-top:0;">
+        <div class="section-head">
+          <span class="kicker">About our services</span>
+          <h2>What you actually get access to</h2>
+          <p>The services below are managed live from the admin panel, so this list always reflects what Bharsoft currently offers.</p>
+        </div>
+        <div class="cards-grid" id="aboutServicesPreview"></div>
+      </section>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="page" id="page-services">
+      <section class="block" style="padding-top:20px;">
+        <div class="section-head">
+          <span class="kicker">Services</span>
+          <h2>Everything Bharsoft handles for your ecosystem</h2>
+          <p>Managed directly by our team through the admin panel — updates here go live immediately.</p>
+        </div>
+        <div class="cards-grid" id="servicesGrid"></div>
+      </section>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="page" id="page-contact">
+      <section class="block" style="padding-top:20px;max-width:560px;">
+        <div class="section-head">
+          <span class="kicker">Contact us</span>
+          <h2>Tell us about your ecosystem</h2>
+          <p>Send us a note and our team will get back to you.</p>
+        </div>
+        <form id="contactForm">
+          <div class="field"><label for="cName">Full name</label><input id="cName" required></div>
+          <div class="field"><label for="cEmail">Email</label><input id="cEmail" type="email" required></div>
+          <div class="field"><label for="cMsg">Message</label><textarea id="cMsg" required placeholder="What are you trying to connect?"></textarea></div>
+          <button class="btn btn-primary btn-block" type="submit">Send message</button>
+        </form>
+      </section>
+    </section>
+
+    <!-- LOGIN -->
+    <section class="page" id="page-login">
+      <section class="block" style="padding-top:20px;">
+
+        <!-- setup step 1: connect database -->
+        <div class="auth-card" id="dbSetupCard" style="display:none;">
+          <h3>Connect your database</h3>
+          <p class="sub">Paste the exec URL of your backend/database web app (e.g. a deployed Google Apps Script). Admin creation is locked until this is set.</p>
+          <form id="dbSetupForm">
+            <div class="field"><label for="dbUrl">Database exec URL</label><input id="dbUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" required></div>
+            <div class="err-text" id="dbSetupErr"></div>
+            <button class="btn btn-primary btn-block" type="submit">Save &amp; continue</button>
+          </form>
+        </div>
+
+        <!-- bootstrap: create first admin -->
+        <div class="auth-card" id="bootstrapCard" style="display:none;">
+          <h3>Set up admin account</h3>
+          <p class="sub">Database is connected. Now create the first admin account — this setup screen locks permanently once it's done.</p>
+          <form id="bootstrapForm">
+            <div class="field"><label for="bUser">Username</label><input id="bUser" required autocomplete="off"></div>
+            <div class="field"><label for="bPass">Password</label><input id="bPass" type="password" required minlength="6"></div>
+            <div class="field"><label for="bPass2">Confirm password</label><input id="bPass2" type="password" required minlength="6"></div>
+            <div class="err-text" id="bootstrapErr"></div>
+            <button class="btn btn-primary btn-block" type="submit">Create admin &amp; continue</button>
+          </form>
+        </div>
+
+        <!-- step 1: username + password -->
+        <div class="auth-card" id="loginCard" style="display:none;">
+          <h3>Admin login</h3>
+          <p class="sub">Enter your credentials to receive a one-time code.</p>
+          <div class="lock-banner" id="lockBanner" style="display:none;"></div>
+          <form id="loginForm">
+            <div class="field"><label for="lUser">Username</label><input id="lUser" required autocomplete="off"></div>
+            <div class="field"><label for="lPass">Password</label><input id="lPass" type="password" required></div>
+            <div class="err-text" id="loginErr"></div>
+            <button class="btn btn-primary btn-block" type="submit" id="loginSubmitBtn">Send OTP</button>
+          </form>
+        </div>
+
+        <!-- step 2: OTP -->
+        <div class="auth-card" id="otpCard" style="display:none;">
+          <h3>Enter verification code</h3>
+          <p class="sub">A 6-digit code was sent for <span id="otpUserLabel" class="mono"></span>.</p>
+          <div class="demo-otp-banner" id="demoOtpBanner"></div>
+          <form id="otpForm">
+            <div class="field otp-inputs"><label for="otpInput">One-time code</label><input id="otpInput" maxlength="6" inputmode="numeric" required></div>
+            <div class="err-text" id="otpErr"></div>
+            <button class="btn btn-primary btn-block" type="submit">Verify &amp; login</button>
+          </form>
+          <p style="margin-top:14px;"><button class="link-btn" id="resendOtpBtn" type="button">Resend code</button></p>
+          <p style="margin-top:6px;"><button class="link-btn" id="backToLoginBtn" type="button">← back</button></p>
+        </div>
+
+      </section>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="page" id="page-admin">
+      <section class="block" style="padding-top:20px;">
+        <div class="admin-shell">
+          <div class="admin-side">
+            <div class="admin-user">
+              <b id="adminUserName">—</b>
+              <span id="adminSessionExpiry">session —</span>
+            </div>
+            <button class="admin-tab active" data-tab="services">🧱 Manage services</button>
+            <button class="admin-tab" data-tab="messages">✉️ Messages</button>
+            <button class="admin-tab" data-tab="activity">📜 Activity log</button>
+            <button class="btn btn-danger btn-block" id="logoutBtn" style="margin-top:18px;">Log out</button>
+          </div>
+          <div class="admin-main">
+
+            <div class="admin-panel active" id="tab-services">
+              <div class="admin-toprow">
+                <h3>Manage services</h3>
+                <button class="btn btn-primary" id="newServiceBtn">+ Add service</button>
+              </div>
+              <div class="service-form" id="serviceForm">
+                <div class="form-grid">
+                  <div class="field"><label for="svTitle">Title</label><input id="svTitle"></div>
+                  <div class="field"><label for="svIcon">Icon (emoji)</label><input id="svIcon" placeholder="⚙️"></div>
+                  <div class="field"><label for="svCapability">Capability tag (optional)</label><input id="svCapability" placeholder="mail"></div>
+                  <div class="field"><label for="svExecUrl">Mail relay exec URL (optional, private)</label><input id="svExecUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
+                  <div class="field full"><label for="svDesc">Description</label><textarea id="svDesc"></textarea></div>
+                  <div class="hint full" style="margin-top:-8px;">Set capability to "mail" and add an exec URL here to power the Contact Us email relay. This URL is never shown on the public Services page.</div>
+                </div>
+                <div class="row-actions">
+                  <button class="btn btn-primary" id="saveServiceBtn">Save service</button>
+                  <button class="btn btn-ghost" id="cancelServiceBtn">Cancel</button>
+                </div>
+              </div>
+              <table class="data-table">
+                <thead><tr><th>Service</th><th>Description</th><th></th></tr></thead>
+                <tbody id="servicesAdminBody"></tbody>
+              </table>
+            </div>
+
+            <div class="admin-panel" id="tab-messages">
+              <div class="admin-toprow"><h3>Contact messages</h3></div>
+              <table class="data-table">
+                <thead><tr><th>From</th><th>Message</th><th>Delivery</th><th>Received</th></tr></thead>
+                <tbody id="messagesBody"></tbody>
+              </table>
+            </div>
+
+            <div class="admin-panel" id="tab-activity">
+              <div class="admin-toprow"><h3>Activity log</h3></div>
+              <table class="data-table">
+                <thead><tr><th>Event</th><th>Detail</th><th>Time</th></tr></thead>
+                <tbody id="activityBody"></tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </section>
+
+  </div>
+
+  <div class="wrap"><footer><span>© 2026 Bharsoft — Ecosystem Protocol</span><span>Contact us: <a href="mailto:contact@email.com">contact@email.com</a> &nbsp;·&nbsp; Help: <a href="mailto:help@email.com">help@email.com</a></span><span class="mono" id="footerStatus">checking backend…</span></footer></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
