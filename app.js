@@ -52,31 +52,24 @@ const loginForm = document.getElementById('loginForm');
 const otpForm = document.getElementById('otpForm');
 const loginCard = document.getElementById('loginCard');
 const otpCard = document.getElementById('otpCard');
-const bootstrapForm = document.getElementById('bootstrapForm');
-const bootstrapCard = document.getElementById('bootstrapCard');
-const dbSetupForm = document.getElementById('dbSetupForm');
-const dbSetupCard = document.getElementById('dbSetupCard');
 
 let currentUser = null;
 let sessionToken = null;
 
-// Show login card when page is loaded
+// Initialize login card visibility
 document.addEventListener('DOMContentLoaded', function() {
-  const loginPage = document.getElementById('page-login');
-  if (loginPage && loginPage.classList.contains('active')) {
-    loginCard.style.display = 'block';
-    otpCard.style.display = 'none';
-  }
+  // Make sure cards are properly initialized
+  if (loginCard) loginCard.style.display = 'block';
+  if (otpCard) otpCard.style.display = 'none';
 });
 
-// Login Submit - FIXED: Now properly shows OTP page
+// Login Submit - Shows OTP page
 if (loginForm) {
   loginForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    console.log('Login form submitted');
     
-    const user = document.getElementById('lUser').value;
-    const pass = document.getElementById('lPass').value;
+    const user = document.getElementById('lUser').value.trim();
+    const pass = document.getElementById('lPass').value.trim();
     
     if (!user || !pass) {
       document.getElementById('loginErr').textContent = 'Please enter username and password';
@@ -86,46 +79,38 @@ if (loginForm) {
     // Demo mode: accept any credentials
     currentUser = user;
     document.getElementById('otpUserLabel').textContent = user;
-    document.getElementById('demoOtpBanner').innerHTML = `
-      <strong>Demo mode:</strong> Any 6-digit code works. Try: <code class="mono">123456</code>
-    `;
+    document.getElementById('demoOtpBanner').innerHTML = `<strong>Demo mode:</strong> Any 6-digit code works. Try: <code class="mono">123456</code>`;
     
-    // Hide login, show OTP
-    setTimeout(() => {
-      loginCard.style.display = 'none';
-      otpCard.style.display = 'block';
-      document.getElementById('loginErr').textContent = '';
-      document.getElementById('otpInput').value = '';
-      console.log('OTP card shown');
-    }, 300);
+    // Show OTP card
+    loginCard.style.display = 'none';
+    otpCard.style.display = 'block';
+    document.getElementById('otpInput').value = '';
+    document.getElementById('otpErr').textContent = '';
+    document.getElementById('loginErr').textContent = '';
   });
 }
 
-// OTP Submit
+// OTP Submit - Login to admin
 if (otpForm) {
   otpForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    console.log('OTP form submitted');
     
-    const otp = document.getElementById('otpInput').value;
+    const otp = document.getElementById('otpInput').value.trim();
     
     if (otp.length === 6 && /^\d+$/.test(otp)) {
       sessionToken = 'demo-token-' + Date.now();
-      console.log('Valid OTP, loading admin panel');
       
-      // Hide OTP card and show admin
-      otpCard.style.display = 'none';
+      // Hide both cards
       loginCard.style.display = 'none';
+      otpCard.style.display = 'none';
       
-      // Show admin page
+      // Navigate to admin
       showPage('admin');
+      loadAdminPanel();
       
-      // Load admin data
-      setTimeout(() => {
-        loadAdminPanel();
-      }, 100);
-      
-      document.getElementById('otpErr').textContent = '';
+      // Reset form
+      document.getElementById('loginForm').reset();
+      document.getElementById('otpForm').reset();
     } else {
       document.getElementById('otpErr').textContent = 'Invalid code. Enter 6 digits.';
     }
@@ -133,27 +118,24 @@ if (otpForm) {
 }
 
 // Resend OTP
-if (document.getElementById('resendOtpBtn')) {
-  document.getElementById('resendOtpBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    showToast('OTP resent to your email');
-  });
-}
+document.getElementById('resendOtpBtn')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  showToast('OTP resent to your email');
+});
 
 // Back to Login
-if (document.getElementById('backToLoginBtn')) {
-  document.getElementById('backToLoginBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    otpCard.style.display = 'none';
-    loginCard.style.display = 'block';
-    document.getElementById('otpInput').value = '';
-    document.getElementById('otpErr').textContent = '';
-  });
-}
+document.getElementById('backToLoginBtn')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  otpCard.style.display = 'none';
+  loginCard.style.display = 'block';
+  document.getElementById('otpInput').value = '';
+  document.getElementById('otpErr').textContent = '';
+});
 
 // ============ ADMIN PANEL ============
 function loadAdminPanel() {
-  console.log('Loading admin panel for user:', currentUser);
+  if (!currentUser) return;
+  
   document.getElementById('adminUserName').textContent = currentUser;
   const expiryTime = new Date(Date.now() + 30 * 60000).toLocaleTimeString();
   document.getElementById('adminSessionExpiry').textContent = `expires ${expiryTime}`;
@@ -164,23 +146,21 @@ function loadAdminPanel() {
 }
 
 // Logout
-if (document.getElementById('logoutBtn')) {
-  document.getElementById('logoutBtn').addEventListener('click', function() {
-    sessionToken = null;
-    currentUser = null;
-    
-    // Reset forms
-    if (loginForm) loginForm.reset();
-    if (otpForm) otpForm.reset();
-    
-    // Show login card
-    loginCard.style.display = 'block';
-    otpCard.style.display = 'none';
-    
-    showPage('home');
-    showToast('Logged out');
-  });
-}
+document.getElementById('logoutBtn')?.addEventListener('click', function() {
+  sessionToken = null;
+  currentUser = null;
+  
+  // Reset forms
+  document.getElementById('loginForm')?.reset();
+  document.getElementById('otpForm')?.reset();
+  
+  // Reset card displays
+  loginCard.style.display = 'block';
+  otpCard.style.display = 'none';
+  
+  showPage('home');
+  showToast('Logged out');
+});
 
 // ============ SERVICES MANAGEMENT ============
 let services = JSON.parse(localStorage.getItem('services')) || [
@@ -217,7 +197,6 @@ function loadServices() {
   }
   
   services.forEach(svc => {
-    // Public grid
     grid.innerHTML += `
       <div class="card">
         <div class="ic">${svc.icon}</div>
@@ -227,7 +206,6 @@ function loadServices() {
       </div>
     `;
     
-    // Admin table
     adminBody.innerHTML += `
       <tr>
         <td class="title">${svc.icon} ${svc.title}</td>
@@ -240,59 +218,58 @@ function loadServices() {
     `;
   });
   
-  // Also update About page preview
   const aboutPreview = document.getElementById('aboutServicesPreview');
   if (aboutPreview) {
     aboutPreview.innerHTML = grid.innerHTML;
   }
 }
 
-if (document.getElementById('newServiceBtn')) {
-  document.getElementById('newServiceBtn').addEventListener('click', function() {
-    document.getElementById('serviceForm').classList.add('active');
+document.getElementById('newServiceBtn')?.addEventListener('click', function() {
+  const form = document.getElementById('serviceForm');
+  if (form) {
+    form.classList.add('active');
     document.getElementById('svTitle').value = '';
     document.getElementById('svIcon').value = '';
     document.getElementById('svCapability').value = '';
     document.getElementById('svExecUrl').value = '';
     document.getElementById('svDesc').value = '';
-  });
-}
+  }
+});
 
-if (document.getElementById('cancelServiceBtn')) {
-  document.getElementById('cancelServiceBtn').addEventListener('click', function() {
-    document.getElementById('serviceForm').classList.remove('active');
-  });
-}
+document.getElementById('cancelServiceBtn')?.addEventListener('click', function() {
+  const form = document.getElementById('serviceForm');
+  if (form) {
+    form.classList.remove('active');
+  }
+});
 
-if (document.getElementById('saveServiceBtn')) {
-  document.getElementById('saveServiceBtn').addEventListener('click', function() {
-    const title = document.getElementById('svTitle').value;
-    const icon = document.getElementById('svIcon').value || '⚙️';
-    const capability = document.getElementById('svCapability').value;
-    const execUrl = document.getElementById('svExecUrl').value;
-    const desc = document.getElementById('svDesc').value;
-    
-    if (!title || !desc) {
-      showToast('Title and description required');
-      return;
-    }
-    
-    const newService = {
-      id: Date.now(),
-      title,
-      icon,
-      capability,
-      description: desc,
-      execUrl
-    };
-    
-    services.push(newService);
-    localStorage.setItem('services', JSON.stringify(services));
-    loadServices();
-    document.getElementById('serviceForm').classList.remove('active');
-    showToast('Service added');
-  });
-}
+document.getElementById('saveServiceBtn')?.addEventListener('click', function() {
+  const title = document.getElementById('svTitle').value;
+  const icon = document.getElementById('svIcon').value || '⚙️';
+  const capability = document.getElementById('svCapability').value;
+  const execUrl = document.getElementById('svExecUrl').value;
+  const desc = document.getElementById('svDesc').value;
+  
+  if (!title || !desc) {
+    showToast('Title and description required');
+    return;
+  }
+  
+  const newService = {
+    id: Date.now(),
+    title,
+    icon,
+    capability,
+    description: desc,
+    execUrl
+  };
+  
+  services.push(newService);
+  localStorage.setItem('services', JSON.stringify(services));
+  loadServices();
+  document.getElementById('serviceForm').classList.remove('active');
+  showToast('Service added');
+});
 
 function editService(id) {
   showToast('Edit feature coming soon');
@@ -349,38 +326,34 @@ function loadActivity() {
 }
 
 // ============ CONTACT FORM ============
-if (document.getElementById('contactForm')) {
-  document.getElementById('contactForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('cName').value;
-    const email = document.getElementById('cEmail').value;
-    const msg = document.getElementById('cMsg').value;
-    
-    // Save message
-    const messages = JSON.parse(localStorage.getItem('messages')) || [];
-    messages.push({
-      name,
-      email,
-      message: msg,
-      date: new Date().toISOString(),
-      sent: false
-    });
-    localStorage.setItem('messages', JSON.stringify(messages));
-    
-    // Log activity
-    const activity = JSON.parse(localStorage.getItem('activity')) || [];
-    activity.push({
-      event: 'New contact message',
-      detail: `From: ${name} (${email})`,
-      time: new Date().toISOString()
-    });
-    localStorage.setItem('activity', JSON.stringify(activity));
-    
-    showToast('Message sent! We\'ll be in touch soon.');
-    document.getElementById('contactForm').reset();
+document.getElementById('contactForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('cName').value;
+  const email = document.getElementById('cEmail').value;
+  const msg = document.getElementById('cMsg').value;
+  
+  const messages = JSON.parse(localStorage.getItem('messages')) || [];
+  messages.push({
+    name,
+    email,
+    message: msg,
+    date: new Date().toISOString(),
+    sent: false
   });
-}
+  localStorage.setItem('messages', JSON.stringify(messages));
+  
+  const activity = JSON.parse(localStorage.getItem('activity')) || [];
+  activity.push({
+    event: 'New contact message',
+    detail: `From: ${name} (${email})`,
+    time: new Date().toISOString()
+  });
+  localStorage.setItem('activity', JSON.stringify(activity));
+  
+  showToast('Message sent! We\'ll be in touch soon.');
+  this.reset();
+});
 
 // ============ ADMIN TABS ============
 document.querySelectorAll('.admin-tab').forEach(tab => {
@@ -392,9 +365,7 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     
     this.classList.add('active');
     const panel = document.getElementById(`tab-${tabName}`);
-    if (panel) {
-      panel.classList.add('active');
-    }
+    if (panel) panel.classList.add('active');
   });
 });
 
