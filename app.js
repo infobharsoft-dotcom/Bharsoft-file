@@ -60,76 +60,81 @@ const dbSetupCard = document.getElementById('dbSetupCard');
 let currentUser = null;
 let sessionToken = null;
 
-// Show login card on page load
-window.addEventListener('load', () => {
+// Show login card when page is loaded
+document.addEventListener('DOMContentLoaded', function() {
   const loginPage = document.getElementById('page-login');
   if (loginPage && loginPage.classList.contains('active')) {
     loginCard.style.display = 'block';
+    otpCard.style.display = 'none';
   }
 });
 
-// Listen for page changes
-const observer = new MutationObserver(() => {
-  const loginPage = document.getElementById('page-login');
-  if (loginPage && loginPage.classList.contains('active')) {
-    if (!loginCard.style.display || loginCard.style.display === 'none') {
-      loginCard.style.display = 'block';
-      otpCard.style.display = 'none';
-    }
-  }
-});
-
-observer.observe(document.body, { attributes: true, subtree: true });
-
-// Login Submit
+// Login Submit - FIXED: Now properly shows OTP page
 if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
+  loginForm.addEventListener('submit', function(e) {
     e.preventDefault();
+    console.log('Login form submitted');
+    
     const user = document.getElementById('lUser').value;
     const pass = document.getElementById('lPass').value;
     
-    try {
-      // Demo mode: accept any credentials
-      currentUser = user;
-      document.getElementById('otpUserLabel').textContent = user;
-      document.getElementById('demoOtpBanner').innerHTML = `
-        <strong>Demo mode:</strong> Any 6-digit code works. Try: <code class="mono">123456</code>
-      `;
-      
+    if (!user || !pass) {
+      document.getElementById('loginErr').textContent = 'Please enter username and password';
+      return;
+    }
+    
+    // Demo mode: accept any credentials
+    currentUser = user;
+    document.getElementById('otpUserLabel').textContent = user;
+    document.getElementById('demoOtpBanner').innerHTML = `
+      <strong>Demo mode:</strong> Any 6-digit code works. Try: <code class="mono">123456</code>
+    `;
+    
+    // Hide login, show OTP
+    setTimeout(() => {
       loginCard.style.display = 'none';
       otpCard.style.display = 'block';
       document.getElementById('loginErr').textContent = '';
-    } catch (err) {
-      document.getElementById('loginErr').textContent = 'Login failed. Try again.';
-    }
+      document.getElementById('otpInput').value = '';
+      console.log('OTP card shown');
+    }, 300);
   });
 }
 
 // OTP Submit
 if (otpForm) {
-  otpForm.addEventListener('submit', async (e) => {
+  otpForm.addEventListener('submit', function(e) {
     e.preventDefault();
+    console.log('OTP form submitted');
+    
     const otp = document.getElementById('otpInput').value;
     
-    try {
-      // Demo mode: any 6-digit code works
-      if (otp.length === 6 && /^\d+$/.test(otp)) {
-        sessionToken = 'demo-token-' + Date.now();
-        showPage('admin');
+    if (otp.length === 6 && /^\d+$/.test(otp)) {
+      sessionToken = 'demo-token-' + Date.now();
+      console.log('Valid OTP, loading admin panel');
+      
+      // Hide OTP card and show admin
+      otpCard.style.display = 'none';
+      loginCard.style.display = 'none';
+      
+      // Show admin page
+      showPage('admin');
+      
+      // Load admin data
+      setTimeout(() => {
         loadAdminPanel();
-        otpCard.style.display = 'none';
-      } else {
-        document.getElementById('otpErr').textContent = 'Invalid code. Enter 6 digits.';
-      }
-    } catch (err) {
-      document.getElementById('otpErr').textContent = 'Verification failed.';
+      }, 100);
+      
+      document.getElementById('otpErr').textContent = '';
+    } else {
+      document.getElementById('otpErr').textContent = 'Invalid code. Enter 6 digits.';
     }
   });
 }
 
 // Resend OTP
 if (document.getElementById('resendOtpBtn')) {
-  document.getElementById('resendOtpBtn').addEventListener('click', (e) => {
+  document.getElementById('resendOtpBtn').addEventListener('click', function(e) {
     e.preventDefault();
     showToast('OTP resent to your email');
   });
@@ -137,16 +142,18 @@ if (document.getElementById('resendOtpBtn')) {
 
 // Back to Login
 if (document.getElementById('backToLoginBtn')) {
-  document.getElementById('backToLoginBtn').addEventListener('click', (e) => {
+  document.getElementById('backToLoginBtn').addEventListener('click', function(e) {
     e.preventDefault();
     otpCard.style.display = 'none';
     loginCard.style.display = 'block';
     document.getElementById('otpInput').value = '';
+    document.getElementById('otpErr').textContent = '';
   });
 }
 
 // ============ ADMIN PANEL ============
 function loadAdminPanel() {
+  console.log('Loading admin panel for user:', currentUser);
   document.getElementById('adminUserName').textContent = currentUser;
   const expiryTime = new Date(Date.now() + 30 * 60000).toLocaleTimeString();
   document.getElementById('adminSessionExpiry').textContent = `expires ${expiryTime}`;
@@ -158,9 +165,18 @@ function loadAdminPanel() {
 
 // Logout
 if (document.getElementById('logoutBtn')) {
-  document.getElementById('logoutBtn').addEventListener('click', () => {
+  document.getElementById('logoutBtn').addEventListener('click', function() {
     sessionToken = null;
     currentUser = null;
+    
+    // Reset forms
+    if (loginForm) loginForm.reset();
+    if (otpForm) otpForm.reset();
+    
+    // Show login card
+    loginCard.style.display = 'block';
+    otpCard.style.display = 'none';
+    
     showPage('home');
     showToast('Logged out');
   });
@@ -189,6 +205,8 @@ let services = JSON.parse(localStorage.getItem('services')) || [
 function loadServices() {
   const grid = document.getElementById('servicesGrid');
   const adminBody = document.getElementById('servicesAdminBody');
+  
+  if (!grid || !adminBody) return;
   
   grid.innerHTML = '';
   adminBody.innerHTML = '';
@@ -230,7 +248,7 @@ function loadServices() {
 }
 
 if (document.getElementById('newServiceBtn')) {
-  document.getElementById('newServiceBtn').addEventListener('click', () => {
+  document.getElementById('newServiceBtn').addEventListener('click', function() {
     document.getElementById('serviceForm').classList.add('active');
     document.getElementById('svTitle').value = '';
     document.getElementById('svIcon').value = '';
@@ -241,13 +259,13 @@ if (document.getElementById('newServiceBtn')) {
 }
 
 if (document.getElementById('cancelServiceBtn')) {
-  document.getElementById('cancelServiceBtn').addEventListener('click', () => {
+  document.getElementById('cancelServiceBtn').addEventListener('click', function() {
     document.getElementById('serviceForm').classList.remove('active');
   });
 }
 
 if (document.getElementById('saveServiceBtn')) {
-  document.getElementById('saveServiceBtn').addEventListener('click', () => {
+  document.getElementById('saveServiceBtn').addEventListener('click', function() {
     const title = document.getElementById('svTitle').value;
     const icon = document.getElementById('svIcon').value || '⚙️';
     const capability = document.getElementById('svCapability').value;
@@ -290,6 +308,8 @@ function deleteService(id) {
 // ============ MESSAGES ============
 function loadMessages() {
   const body = document.getElementById('messagesBody');
+  if (!body) return;
+  
   const messages = JSON.parse(localStorage.getItem('messages')) || [];
   
   if (messages.length === 0) {
@@ -310,6 +330,8 @@ function loadMessages() {
 // ============ ACTIVITY LOG ============
 function loadActivity() {
   const body = document.getElementById('activityBody');
+  if (!body) return;
+  
   const activity = JSON.parse(localStorage.getItem('activity')) || [];
   
   if (activity.length === 0) {
@@ -328,7 +350,7 @@ function loadActivity() {
 
 // ============ CONTACT FORM ============
 if (document.getElementById('contactForm')) {
-  document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const name = document.getElementById('cName').value;
@@ -362,14 +384,17 @@ if (document.getElementById('contactForm')) {
 
 // ============ ADMIN TABS ============
 document.querySelectorAll('.admin-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const tabName = tab.dataset.tab;
+  tab.addEventListener('click', function() {
+    const tabName = this.dataset.tab;
     
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     
-    tab.classList.add('active');
-    document.getElementById(`tab-${tabName}`).classList.add('active');
+    this.classList.add('active');
+    const panel = document.getElementById(`tab-${tabName}`);
+    if (panel) {
+      panel.classList.add('active');
+    }
   });
 });
 
